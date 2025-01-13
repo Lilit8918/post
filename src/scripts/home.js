@@ -1,35 +1,63 @@
-import { api } from "./api.js";
+import { api } from "../apis/api.js";
 
-const postsContainer = document.querySelector(".posts");
+document.addEventListener("DOMContentLoaded", () => {
+  const postContainer = document.getElementById("post-container");
 
-// Function to fetch and render posts
-const fetchPosts = async () => {
+  /**
+   * Loads posts from the API and displays them.
+   */
+  async function loadPosts() {
     try {
-        const posts = await api.posts.getAll(); // Replace this with your API method
-        renderPosts(posts);
-    } catch (error) {
-        console.error("Error fetching posts:", error);
-        postsContainer.innerHTML = "<p>Failed to load posts. Please try again later.</p>";
-    }
-};
+      const posts = await api.post.getAll(); // Fetch all posts from the API
+      postContainer.innerHTML = ""; // Clear the container
 
-// Function to render posts
-const renderPosts = (posts) => {
-    postsContainer.innerHTML = ""; // Clear existing posts
-    posts.forEach((post) => {
-        const postElement = `
-            <div class="post-card">
-                <img src="${post.img}" alt="${post.title}" class="post-image">
-                <div>
-                    <h2 class="post-title">${post.title}</h2>
-                    <p class="post-story">${post.story}</p>
-                    <p class="author-name">By: ${post.authorName}</p>
-                </div>
-            </div>
+      posts.forEach((post) => {
+        const postElement = document.createElement("div");
+        postElement.className = "post";
+
+        postElement.innerHTML = `
+          <h2>${post.title}</h2>
+          <p>${post.story}</p>
+          ${
+            post.image
+              ? `<img src="${post.image}" alt="Post Image" class="post-image">`
+              : ""
+          }
+          <button class="delete-btn" data-id="${post.id}">Delete</button>
         `;
-        postsContainer.innerHTML += postElement;
-    });
-};
 
-// Initialize the app
-fetchPosts();
+        postContainer.appendChild(postElement);
+      });
+
+      // Attach event listeners to delete buttons
+      const deleteButtons = document.querySelectorAll(".delete-btn");
+      deleteButtons.forEach((btn) =>
+        btn.addEventListener("click", (event) => {
+          const id = event.target.dataset.id;
+          deletePost(id);
+        })
+      );
+    } catch (error) {
+      console.error("Error loading posts:", error);
+      postContainer.innerHTML =
+        "<p>Failed to load posts. Please try again later.</p>";
+    }
+  }
+
+  /**
+   * Deletes a post using the API by its ID.
+   * @param {string} id - The ID of the post to delete.
+   */
+  async function deletePost(id) {
+    try {
+      await api.post.delete(id); // Delete post via API
+      loadPosts(); // Reload posts
+    } catch (error) {
+      console.error("Error deleting post:", error);
+      alert("Failed to delete post. Please try again.");
+    }
+  }
+
+  // Load posts on page load
+  loadPosts();
+});
