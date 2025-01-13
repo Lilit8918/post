@@ -1,33 +1,31 @@
 export class PostApi {
-    constructor(baseUrl) {
-      this.baseUrl = baseUrl;
+  constructor(baseUrl) {
+    this.baseUrl = `${baseUrl}/posts`;
+  }
+
+  /**
+   * Fetch all posts from the server.
+   * @returns {Promise<Array>} List of posts.
+   */
+  async getAll() {
+    const response = await fetch(this.baseUrl);
+    if (!response.ok) {
+      throw new Error("Failed to fetch posts");
     }
-  
-    async getPosts() {
-      const response = await fetch(`${this.baseUrl}/posts`);
-      return response.json();
-    }
-  
-    async create(post) {
-      const response = await fetch(`${this.baseUrl}/posts`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(post),
-      });
-      return response.json();
-    }
-  
-    async update(id, post) {
-      const response = await fetch(`${this.baseUrl}/posts/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(post),
-      });
-      return response.json();
-    }
-  
-    async delete(id) {
-      return fetch(`${this.baseUrl}/posts/${id}`, { method: "DELETE" });
+    return response.json();
+  }
+
+  /**
+   * Delete a post by its ID.
+   * @param {string} id - The ID of the post to delete.
+   * @returns {Promise<void>}
+   */
+  async delete(id) {
+    const response = await fetch(`${this.baseUrl}/${id}`, {
+      method: "DELETE",
+    });
+    if (!response.ok) {
+      throw new Error("Failed to delete post");
     }
   }
-  
+}
